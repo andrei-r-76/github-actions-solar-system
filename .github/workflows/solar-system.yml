@@ -12,6 +12,32 @@ on:
       - 'feature/*'
     
 jobs:
+    code-coverage:
+        name: Code Coverage test
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v4
+
+          - name: NodeJS Version
+            uses: actions/setup-node@v4
+            with:
+             node-version: 18
+
+          - name: Install Dependencies
+            run: npm install
+
+          - name: Run code coverage test
+            run: npm run code-coverage
+            continue-on-error: true
+
+          - name: Code Coverage result
+            uses: actions/upload-artifact@v4
+            with:
+              name: Code-Coverage-Result
+              path: coverage
+              retention-days: 5
+            
     unit-testing:
         name: Unit Testing
         runs-on: ubuntu-latest
