@@ -16,11 +16,6 @@ jobs:
         name: Unit Testing
         runs-on: ubuntu-latest
         steps:
-        - name: Debug env
-          run: |
-             echo "URI exists: ${MONGO_URI:+yes}"
-             echo "USERNAME exists: ${MONGO_USERNAME:+yes}"
-             echo "PASSWORD exists: ${MONGO_PASSWORD:+yes}"
         - name: Checkout Repository
           uses: actions/checkout@v4
 
