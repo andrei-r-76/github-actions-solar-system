@@ -70,6 +70,7 @@ jobs:
 
     docker:
       name: Docker login
+      needs: [code-coverage, unit-testing]
       runs-on: ubuntu-latest
       steps:
         - name: Checkout Repository
