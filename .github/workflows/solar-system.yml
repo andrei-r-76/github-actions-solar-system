@@ -103,3 +103,22 @@ jobs:
            export CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' solar-system)
            echo $CONTAINER_IP
            wget -q -O - 127.0.0.1:3000/live | grep live
+    
+    kubernetes:
+      name: kubernetes
+      runs-on: ubuntu-latest
+      needs: docker
+      steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v4
+
+        - name: install kubectl
+          uses: azure/setup-kubectl@v4
+          with:
+           version: 'v1.26.0'
+        
+        - name: display kubernetes cluster details
+          run: |
+           kubectl version
+           echo 'kubectl nodes:'
+           kubectl get nodes
