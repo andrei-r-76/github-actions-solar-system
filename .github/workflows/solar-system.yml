@@ -82,11 +82,11 @@ jobs:
             username: ${{secrets.DOCKER_USERNAME}}
             password: ${{secrets.DOCKER_PASSWORD}}
        
-        - name: Docker build image
+        - name: Docker build and push image
           uses: docker/build-push-action@v6
           with:
             context: .
-            push: false
+            push: true
             tags: andreir76/solar-system-test
 
         - name: docker image test
