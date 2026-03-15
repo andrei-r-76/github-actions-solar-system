@@ -157,7 +157,7 @@ jobs:
           #unde folosesc curl IP:PORT
           NAMESPACE: ${{vars.KUBERNETES_MANIFEST_NAMESPACE}}
           REPLICAS: ${{vars.KUBERNETES_MANIFEST_REPLICAS}}
-          IMAGE: ${{vars.DOCKER_USERNAME}}
+          IMAGE: ${{vars.DOCKER_USERNAME}}/solar-system-test
           INGRESS_IP: 127.0.0.1
         
        - name: apply and display kubernetes pods
