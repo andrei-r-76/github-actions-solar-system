@@ -116,6 +116,9 @@ jobs:
        - name: Install kubernetes cluster for testing purposes
          uses: helm/kind-action@v1
 
+       - name: Install nginx ingress controller
+         run: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+
        - name: Display nodes
          run: |
           kubectl get all
