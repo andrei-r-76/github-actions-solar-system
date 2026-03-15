@@ -119,6 +119,9 @@ jobs:
        - name: Install nginx ingress controller
          run: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
 
+       - name: create kubernetes namespace
+         run: kubectl create namespace ${{vars.KUBERNETES_MANIFEST_NAMESPACE}} --dry-run=client -o yaml | kubectl apply -f -
+
        - name: Get nginx ingress controller ports
          run: |
           echo "NGINX_80_PORT=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.spec.ports[?(@.port==80)].nodePort}')" >> $GITHUB_ENV
@@ -150,7 +153,7 @@ jobs:
        - name: apply and display kubernetes pods
          run: |
           kubectl apply -f kubernetes/${{vars.KUBERNETES_MANIFEST_NAMESPACE}}
-          kubectl get all
+          kubectl get all -n ${{vars.KUBERNETES_MANIFEST_NAMESPACE}}
 
        - name: check if tokens were replaced
          run: cat kubernetes/development/ingress.yaml
