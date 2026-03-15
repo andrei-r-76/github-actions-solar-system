@@ -134,7 +134,7 @@ jobs:
          id: get_ports_step
          run: |
           echo "NGINX_80_PORT=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.spec.ports[?(@.port==80)].nodePort}')" >> $GITHUB_ENV
-          echo "OUTPUT_PORT_80=${{env.NGINX_80_PORT}}" >> $GITHUB_OUTPUT
+          echo "OUTPUT_PORT_80=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.spec.ports[?(@.port==80)].nodePort}')"" >> $GITHUB_OUTPUT
           echo "NGINX_443_PORT=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.spec.ports[?(@.port==443)].nodePort}')" >> $GITHUB_ENV
 
        - name: create mongodb secret
@@ -185,4 +185,5 @@ jobs:
         - name: test url using curl
           run: |
            echo $URL
+           echo $PORT
            curl http://$URL:$PORT/live -s -k | jq -r .status | grep -i live
