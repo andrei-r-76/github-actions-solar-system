@@ -119,15 +119,20 @@ jobs:
        - name: Install nginx ingress controller
          run: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
 
-       - name: Display nodes
-         run: |
-          kubectl get all
-          kubectl -n ingress-nginx get svc ingress-nginx-controller
-
        - name: Get nginx ingress controller ports
          run: |
           echo "NGINX_80_PORT=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.spec.ports[?(@.port==80)].nodePort}')" >> $GITHUB_ENV
           echo "NGINX_443_PORT=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.spec.ports[?(@.port==443)].nodePort}')" >> $GITHUB_ENV
+
+       - name: create mongodb secret
+         run: |
+          kubectl -n ${{vars.KUBERNETES_MANIFEST_NAMESPACE}} create secret generic mongo-db-creds \
+          --from-literal=MONGO_URI=${{env.MONGO_URI}} \
+          --from-literal=MONGO_USERNAME=${{env.MONGO_USERNAME}} \
+          --from-literal=MONGO_PASSWORD=${{secrets.MONGO_PASSWORD}} \
+          --save-config \
+          --dry-run=client \
+          -o yaml | kubectl apply -f -
 
        - name: Replace tokens in kubernetes yaml files
          uses: cschleiden/replace-tokens@v1
@@ -141,7 +146,12 @@ jobs:
           REPLICAS: ${{vars.KUBERNETES_MANIFEST_REPLICAS}}
           IMAGE: ${{vars.DOCKER_USERNAME}}
           INGRESS_IP: 127.0.0.1
-         
+        
+       - name: apply and display kubernetes pods
+         run: |
+          kubectl apply -f kubernetes/${{vars.KUBERNETES_MANIFEST_NAMESPACE}}
+          kubectl get all
+
        - name: check if tokens were replaced
          run: cat kubernetes/development/ingress.yaml
       
