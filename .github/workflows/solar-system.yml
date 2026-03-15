@@ -137,4 +137,6 @@ jobs:
           IMAGE: ${{vars.DOCKER_USERNAME}}
           INGRESS_IP: placeholder_value
          
+       - name: check if tokens were replaced
+         run: cat kubernetes/development/ingress.yaml
       
