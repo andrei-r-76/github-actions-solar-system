@@ -144,7 +144,9 @@ jobs:
           tokenSuffix: '_}_'
           files: '["kubernetes/development/*.yaml"]'
          env:
-          80_PORT: ${{env.NGINX_80_PORT}}
+          #80_PORT: ${{env.NGINX_80_PORT}}
+          #nota: portu de mai sus il folosesc doar cand accesez ingress-u, nu cand declar host ip-u, deci la integration testing
+          #unde folosesc curl IP:PORT
           NAMESPACE: ${{vars.KUBERNETES_MANIFEST_NAMESPACE}}
           REPLICAS: ${{vars.KUBERNETES_MANIFEST_REPLICAS}}
           IMAGE: ${{vars.DOCKER_USERNAME}}
