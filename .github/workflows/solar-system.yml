@@ -81,7 +81,7 @@ jobs:
         - name: Docker login action
           uses: docker/login-action@v4
           with:
-            username: ${{secrets.DOCKER_USERNAME}}
+            username: ${{vars.DOCKER_USERNAME}}
             password: ${{secrets.DOCKER_PASSWORD}}
        
         - name: Docker build and push image
@@ -119,6 +119,19 @@ jobs:
        - name: Display nodes
          run: |
           kubectl get all
-          
+          kubectl -n ingress-nginx get svc ingress-nginx-controller
+
+
+       - name: Replace tokens in kubernetes yaml files
+         uses: cschleiden/replace-tokens@v1
+         with:
+          tokenPrefix: '_{_'
+          tokenSuffix: '_}_'
+          files: '["kubernetes/development/*.yaml"]'
+         env:
+          NAMESPACE: ${{vars.KUBERNETES_MANIFEST_NAMESPACE}}
+          REPLICAS: ${{vars.KUBERNETES_MANIFEST_REPLICAS}}
+          IMAGE: ${{vars.DOCKER_USERNAME}}
+          INGRESS_IP: placeholder_value
          
       
