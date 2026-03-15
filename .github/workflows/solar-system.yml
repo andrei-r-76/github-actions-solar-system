@@ -136,10 +136,11 @@ jobs:
           tokenSuffix: '_}_'
           files: '["kubernetes/development/*.yaml"]'
          env:
+          80_PORT: ${{env.NGINX_80_PORT}}
           NAMESPACE: ${{vars.KUBERNETES_MANIFEST_NAMESPACE}}
           REPLICAS: ${{vars.KUBERNETES_MANIFEST_REPLICAS}}
           IMAGE: ${{vars.DOCKER_USERNAME}}
-          INGRESS_IP: http://localhost:${{env.NGINX_80_PORT}}
+          INGRESS_IP: 127.0.0.1
          
        - name: check if tokens were replaced
          run: cat kubernetes/development/ingress.yaml
