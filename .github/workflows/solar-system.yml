@@ -154,6 +154,7 @@ jobs:
          run: |
           kubectl apply -f kubernetes/${{vars.KUBERNETES_MANIFEST_NAMESPACE}}
           kubectl get all -n ${{vars.KUBERNETES_MANIFEST_NAMESPACE}}
+          kubectl -n development get ing
 
        - name: check if tokens were replaced
          run: cat kubernetes/development/ingress.yaml
