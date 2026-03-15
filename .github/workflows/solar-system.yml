@@ -115,6 +115,8 @@ jobs:
 
        - name: Install kubernetes cluster for testing purposes
          uses: helm/kind-action@v1
+         with:
+          config: kubernetes/development/kind-config.yaml
 
        - name: Install nginx ingress controller
          run: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
@@ -130,14 +132,14 @@ jobs:
        - name: create kubernetes namespace
          run: kubectl create namespace ${{vars.KUBERNETES_MANIFEST_NAMESPACE}} --dry-run=client -o yaml | kubectl apply -f -
 
-       - name: Get nginx ingress controller ports
-         id: get_ports_step
-         run: |
-          HTTPS_PORT=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.spec.ports[?(@.port==443)].nodePort}')
-          HTTP_PORT=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
-          echo "NGINX_80_PORT=$HTTP_PORT" >> $GITHUB_ENV
-          echo "OUTPUT_PORT_80=$HTTP_PORT" >> $GITHUB_OUTPUT
-          echo "NGINX_443_PORT=$HTTPS_PORT" >> $GITHUB_ENV
+      #  - name: Get nginx ingress controller ports
+      #    id: get_ports_step
+      #    run: |
+      #     HTTPS_PORT=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.spec.ports[?(@.port==443)].nodePort}')
+      #     HTTP_PORT=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
+      #     echo "NGINX_80_PORT=$HTTP_PORT" >> $GITHUB_ENV
+      #     echo "OUTPUT_PORT_80=$HTTP_PORT" >> $GITHUB_OUTPUT
+      #     echo "NGINX_443_PORT=$HTTPS_PORT" >> $GITHUB_ENV
 
        - name: create mongodb secret
          run: |
@@ -175,8 +177,8 @@ jobs:
        - name: test url using curl
          run: |
            echo ${{env.APP_INGRESS_HOST}}
-           echo ${{env.NGINX_80_PORT}}
-           curl http://${{env.APP_INGRESS_HOST}}:${{env.NGINX_80_PORT}}/live -s -k | jq -r .status | grep -i live
+           #echo ${{env.NGINX_80_PORT}}
+           curl http://${{env.APP_INGRESS_HOST}}/live -s -k | jq -r .status | grep -i live
            
       #outputs:
         #output1: ${{steps.get_all_step.outputs.APP_INGRESS_HOST}}
