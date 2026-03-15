@@ -135,8 +135,8 @@ jobs:
          run: |
           HTTPS_PORT=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.spec.ports[?(@.port==443)].nodePort}')
           HTTP_PORT=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.spec.ports[?(@.port==80)].nodePort}')
-          echo "NGINX_80_PORT=$HTTP_PORT >> $GITHUB_ENV
-          echo "OUTPUT_PORT_80=$HTTP_PORT >> $GITHUB_OUTPUT
+          echo "NGINX_80_PORT=$HTTP_PORT" >> $GITHUB_ENV
+          echo "OUTPUT_PORT_80=$HTTP_PORT" >> $GITHUB_OUTPUT
           echo "NGINX_443_PORT=$HTTPS_PORT" >> $GITHUB_ENV
 
        - name: create mongodb secret
@@ -170,22 +170,29 @@ jobs:
           kubectl apply -f kubernetes/${{vars.KUBERNETES_MANIFEST_NAMESPACE}}
           kubectl get all -n ${{vars.KUBERNETES_MANIFEST_NAMESPACE}}
           kubectl -n development get ing
-          echo "APP_INGRESS_HOST=$(kubectl -n development get ing -o jsonpath="{.items[0].spec.tls[0].hosts[0]}")" >> $GITHUB_OUTPUT
-      outputs:
-        output1: ${{steps.get_all_step.outputs.APP_INGRESS_HOST}}
-        output2: ${{steps.get_ports_step.outputs.OUTPUT_PORT_80}}
+          echo "APP_INGRESS_HOST=$(kubectl -n development get ing -o jsonpath="{.items[0].spec.tls[0].hosts[0]}")" >> $GITHUB_ENV
 
-    integration-test:
-      needs: dev-deploy
-      runs-on: ubuntu-latest
-      environment:
-        name: development
-      env:
-        URL: ${{needs.dev-deploy.outputs.output1}}
-        PORT: ${{needs.dev-deploy.outputs.output2}}
-      steps:
-        - name: test url using curl
-          run: |
-           echo $URL
-           echo $PORT
-           curl http://$URL:$PORT/live -s -k | jq -r .status | grep -i live
+       - name: test url using curl
+         run: |
+           echo ${{env.APP_INGRESS_HOST}}
+           echo ${{env.NGINX_80_PORT}}
+           curl http://${{env.APP_INGRESS_HOST}}:${{env.NGINX_80_PORT}}/live -s -k | jq -r .status | grep -i live
+           
+      #outputs:
+        #output1: ${{steps.get_all_step.outputs.APP_INGRESS_HOST}}
+        #output2: ${{steps.get_ports_step.outputs.OUTPUT_PORT_80}}
+
+    # integration-test:
+    #   needs: dev-deploy
+    #   runs-on: ubuntu-latest
+    #   environment:
+    #     name: development
+    #   env:
+    #     URL: ${{needs.dev-deploy.outputs.output1}}
+    #     PORT: ${{needs.dev-deploy.outputs.output2}}
+    #   steps:
+    #     - name: test url using curl
+    #       run: |
+    #        echo $URL
+    #        echo $PORT
+    #        curl http://$URL:$PORT/live -s -k | jq -r .status | grep -i live
