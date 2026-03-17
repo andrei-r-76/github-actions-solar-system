@@ -201,29 +201,40 @@ jobs:
 
        - name: Run Integration Test with Retries
          run: |
-            # Attempt the test up to 10 times with a 5-second pause between each
             SUCCESS=false
             for i in {1..10}; do
-              echo "Attempt $i: Testing https://${{env.APP_INGRESS_HOST}}/live"
+              echo "--- Attempt $i ---"
               
-              # We check the status code. 200 is what we want.
-              RESPONSE=$(curl -s -k https://${{env.APP_INGRESS_HOST}}/live)
-              STATUS=$(echo $RESPONSE | jq -r .status || echo "error")
-              
-              if [ "$STATUS" == "live" ]; then
-                echo "Success! Application is live."
-                SUCCESS=true
-                break
+              # 1. Get the HTTP status code only (-o /dev/null hides the body)
+              HTTP_STATUS=$(curl -s -k -o /dev/null -w "%{http_code}" https://$URL/live)
+              echo "HTTP Status: $HTTP_STATUS"
+
+              # 2. Only if we get a 200, do we check the JSON body
+              if [ "$HTTP_STATUS" -eq 200 ]; then
+                # We use '|| true' here just as an extra safety measure for the script
+                BODY=$(curl -s -k https://$URL/live)
+                APP_STATE=$(echo "$BODY" | jq -r .status 2>/dev/null || echo "not_json")
+                
+                if [ "$APP_STATE" == "live" ]; then
+                  echo "Success! Application is live and healthy."
+                  SUCCESS=true
+                  break
+                else
+                  echo "App is up (200), but status is: $APP_STATE"
+                fi
+              else
+                echo "Ingress/App not ready yet. Still getting $HTTP_STATUS."
               fi
-              
-              echo "Application not ready yet (received: $STATUS). Retrying in 5s..."
+
+              echo "Waiting 5s before next attempt..."
               sleep 5
             done
 
+            # 3. Final check: if we never set SUCCESS to true, fail the whole job
             if [ "$SUCCESS" = false ]; then
-              echo "Integration test failed after 10 attempts."
+              echo "ERROR: Integration test timed out."
               exit 1
-            fi   
+            fi
           # curl http://${{env.APP_INGRESS_HOST}}/live -s -k | jq -r .status | grep -i live
            
       #outputs:
