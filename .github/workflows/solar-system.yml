@@ -183,8 +183,8 @@ jobs:
        - name: test url using curl
          run: |
            echo "HOST: ${{env.APP_INGRESS_HOST}}"
-           echo "URL: http://${{env.APP_INGRESS_HOST}}/live"
-           curl -v http://${{env.APP_INGRESS_HOST}}/live -k > response.txt 2>&1 || true
+           echo "URL: https://${{env.APP_INGRESS_HOST}}/live"
+           curl -v https://${{env.APP_INGRESS_HOST}}/live -k > response.txt 2>&1 || true
            cat response.txt
            
           # curl http://${{env.APP_INGRESS_HOST}}/live -s -k | jq -r .status | grep -i live
