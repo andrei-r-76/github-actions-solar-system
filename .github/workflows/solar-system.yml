@@ -275,7 +275,7 @@ jobs:
               kubectl -n ${{vars.KUBERNETES_MANIFEST_NAMESPACE}} get ing
               echo "APP_INGRESS_HOST=$(kubectl -n ${{vars.KUBERNETES_MANIFEST_NAMESPACE}} get ing -o jsonpath="{.items[0].spec.tls[0].hosts[0]}")" >> $GITHUB_ENV
 
-          - name: Wait for Solar System App
+          - name: wait for solar system deployment
             run: |
               kubectl wait --namespace ${{vars.KUBERNETES_MANIFEST_NAMESPACE}} \
                 --for=condition=available deployment/solar-system \
@@ -288,40 +288,31 @@ jobs:
               curl -v https://${{env.APP_INGRESS_HOST}}/live -k > response.txt 2>&1 || true
               cat response.txt
 
-          - name: Run Integration Test with Retries
+          - name: integration test 
             run: |
                 URL=${{env.APP_INGRESS_HOST}}
                 SUCCESS=false
                 for i in {1..10}; do
                   echo "--- Attempt $i ---"
-                  
-                  # 1. Get the HTTP status code only (-o /dev/null hides the body)
                   HTTP_STATUS=$(curl -s -k -o /dev/null -w "%{http_code}" https://$URL/live)
                   echo "HTTP Status: $HTTP_STATUS"
-
-                  # 2. Only if we get a 200, do we check the JSON body
                   if [ "$HTTP_STATUS" -eq 200 ]; then
-                    # We use '|| true' here just as an extra safety measure for the script
                     BODY=$(curl -s -k https://$URL/live)
                     APP_STATE=$(echo "$BODY" | jq -r .status 2>/dev/null || echo "not_json")
-                    
                     if [ "$APP_STATE" == "live" ]; then
-                      echo "Success! Application is live and healthy."
+                      echo "application is live"
                       SUCCESS=true
                       break
                     else
-                      echo "App is up (200), but status is: $APP_STATE"
+                      echo "status is: $APP_STATE"
                     fi
                   else
-                    echo "Ingress/App not ready yet. Still getting $HTTP_STATUS."
+                    echo "app not ready, status is $HTTP_STATUS."
                   fi
-
-                  echo "Waiting 5s before next attempt..."
+                  echo "waiting for next attempt..."
                   sleep 5
                 done
-
-                # 3. Final check: if we never set SUCCESS to true, fail the whole job
                 if [ "$SUCCESS" = false ]; then
-                  echo "ERROR: Integration test timed out."
+                  echo "integration test timed out."
                   exit 1
                 fi
