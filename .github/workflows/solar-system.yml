@@ -179,8 +179,8 @@ jobs:
           kubectl wait --namespace ${{vars.KUBERNETES_MANIFEST_NAMESPACE}} \
             --for=condition=available deployment/solar-system \
             --timeout=60s
-        - name: Debug Kubernetes Networking
-          run: |
+       - name: Debug Kubernetes Networking
+         run: |
             NAMESPACE=${{vars.KUBERNETES_MANIFEST_NAMESPACE}}
             
             echo "--- 1. CHECKING INGRESS BACKENDS ---"
@@ -191,7 +191,7 @@ jobs:
             
             echo "--- 3. CHECKING ENDPOINTS ---"
             kubectl get endpoints solar-system -n $NAMESPACE
-            
+
        - name: test url using curl
          run: |
            echo "HOST: ${{env.APP_INGRESS_HOST}}"
