@@ -198,7 +198,32 @@ jobs:
            echo "URL: https://${{env.APP_INGRESS_HOST}}/live"
            curl -v https://${{env.APP_INGRESS_HOST}}/live -k > response.txt 2>&1 || true
            cat response.txt
-           
+
+       - name: Run Integration Test with Retries
+         run: |
+            # Attempt the test up to 10 times with a 5-second pause between each
+            SUCCESS=false
+            for i in {1..10}; do
+              echo "Attempt $i: Testing https://${{env.APP_INGRESS_HOST}}/live"
+              
+              # We check the status code. 200 is what we want.
+              RESPONSE=$(curl -s -k https://${{env.APP_INGRESS_HOST}}/live)
+              STATUS=$(echo $RESPONSE | jq -r .status || echo "error")
+              
+              if [ "$STATUS" == "live" ]; then
+                echo "Success! Application is live."
+                SUCCESS=true
+                break
+              fi
+              
+              echo "Application not ready yet (received: $STATUS). Retrying in 5s..."
+              sleep 5
+            done
+
+            if [ "$SUCCESS" = false ]; then
+              echo "Integration test failed after 10 attempts."
+              exit 1
+            fi   
           # curl http://${{env.APP_INGRESS_HOST}}/live -s -k | jq -r .status | grep -i live
            
       #outputs:
